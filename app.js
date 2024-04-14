@@ -24,6 +24,89 @@ const obstacle = {
 let score = 0;
 let isGameOver = false;
 
+let web3;
+let contract;
+let userAccount;
+
+async function init() {
+    // Check if MetaMask is installed
+    if (typeof window.ethereum !== 'undefined') {
+        web3 = new Web3(window.ethereum);
+        await window.ethereum.enable();
+        userAccount = await getCurrentAccount();
+        updateUI();
+
+        // Load contract
+        const contractAddress = 'YOUR_CONTRACT_ADDRESS';
+        const abi = YOUR_CONTRACT_ABI;
+        contract = new web3.eth.Contract(abi, contractAddress);
+    } else {
+        updateUIDisconnected();
+        alert('Please install MetaMask to play and make purchases!');
+    }
+
+    // Rest of your game code here...
+}
+
+
+async function getCurrentAccount() {
+    const accounts = await web3.eth.getAccounts();
+    if (accounts.length > 0) {
+        return accounts[0];
+    }
+    return null;
+}
+
+function updateUI() {
+    if (userAccount) {
+        document.getElementById('account').innerText = userAccount;
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('logoutButton').classList.remove('hidden');
+    } else {
+        document.getElementById('account').innerText = "Not connected";
+        document.getElementById('loginSection').classList.remove('hidden');
+        document.getElementById('logoutButton').classList.add('hidden');
+    }
+}
+
+async function login() {
+    // Check if MetaMask is installed
+    if (typeof window.ethereum !== 'undefined') {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            userAccount = accounts[0];
+            updateUI();
+        } catch (error) {
+            console.error(error);
+        }
+    } else {
+        updateUIDisconnected();
+        alert('Please install MetaMask to log in!');
+    }
+}
+
+async function logout() {
+    await window.ethereum.request({ method: 'wallet_requestPermissions', params: [{ eth_accounts: {} }] });
+    userAccount = null;
+    updateUI();
+}
+
+async function purchasePowerUp() {
+    if (!userAccount) {
+        alert('Please connect your MetaMask wallet first!');
+        return;
+    }
+
+    const powerUpPrice = web3.utils.toWei('1', 'ether'); // Price of power-up in Wei
+    try {
+        await contract.methods.purchasePowerUp().send({ from: userAccount, value: powerUpPrice });
+        alert('Power-up purchased successfully!');
+    } catch (error) {
+        console.error(error);
+        alert('Failed to purchase power-up. Please try again.');
+    }
+}
+
 function drawPlayer() {
     ctx.fillStyle = "#f00";
     ctx.fillRect(player.x, player.y, player.width, player.height);
@@ -132,3 +215,8 @@ document.addEventListener("keydown", function (event) {
 });
 
 update();
+
+// Call init function when the page loads
+window.onload = function() {
+    init();
+};

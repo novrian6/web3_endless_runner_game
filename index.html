@@ -9,12 +9,19 @@
     <div class="container">
         <h1>Endless Runner Game</h1>
         <p>Press spacebar to jump!</p>
-         
-        <p>Created by: Nova Novriansyah</p>
+        <p id="obstacleSpeed">Obstacle Speed: 4</p>
+        <p id="score">Score: 0</p>
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="gameOver" class="hidden">
             <p>Game Over!</p>
             <button onclick="restartGame()">Restart</button>
+        </div>
+        <div id="accountInfo">
+            <span id="account">Not connected</span>
+            <button id="logoutButton" onclick="logout()" class="hidden">Logout</button>
+        </div>
+        <div id="loginSection">
+            <button onclick="login()">Connect with MetaMask</button>
         </div>
     </div>
     <script src="app.js"></script>
